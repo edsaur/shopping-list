@@ -1,17 +1,20 @@
-let form = document.getElementById('item-form');
-let itemInput = document.getElementById('item-input')
+const form = document.getElementById('item-form');
+const itemInput = document.getElementById('item-input')
 
-let deleteBtn = document.querySelectorAll('.remove-item');
-let removeBtn = document.getElementById('clear');
-let filter = document.getElementById('filter');
+const deleteBtn = document.querySelectorAll('.remove-item');
+const removeBtn = document.getElementById('clear');
+const filter = document.getElementById('filter');
 
 
-let container = document.querySelector('.container');
+const container = document.querySelector('.container');
 
-let itemList = document.querySelector("#item-list");
-let li = document.querySelectorAll("li");
+const itemList = document.querySelector("#item-list");
+const li = document.querySelectorAll("li");
 
-let noItemsMessage = document.getElementById('no-items-message');
+const noItemsMessage = document.getElementById('no-items-message');
+let isEditMode = false;
+
+const formBtn = form.querySelector('button'); 
 
 function displayItems(){
     let itemFromStorage = getItemFromLocalStorage();
@@ -19,23 +22,42 @@ function displayItems(){
     itemFromStorage.forEach((item) => {
         addItemToDom(item);
     });
+    const li = document.querySelectorAll("li");
 
     checkUI();
+    if(noItemsMessage){
+        noItemsMessage.remove();
+    }
 }
 
 function onAddItemsSubmit(e) {
+
     let noItemsMessage = document.getElementById('no-items-message');
     e.preventDefault();
-
+    
     const formItems = new FormData(form);
     const typedItem = formItems.get('item');
+
+    const itemFromStorage = getItemFromLocalStorage('items');
 
     if(typedItem === ""){
         alert("Form cannot be empty!");
         return;
+    } 
+
+    if(itemFromStorage.includes(typedItem)){
+        alert(`${typedItem} has already been written!`);
+        return;
     }
+
     addItemToLocalStorage(typedItem);
     addItemToDom(typedItem);
+
+    checkUI();
+    if (noItemsMessage) {
+        noItemsMessage.remove();
+    }
+    
 }
 
 // ADD ITEM TO localStorage
@@ -51,6 +73,7 @@ function addItemToLocalStorage(item){
     itemFromStorage.push(item);
 
     localStorage.setItem('items', JSON.stringify(itemFromStorage));
+    
 }
 
 function getItemFromLocalStorage(){
@@ -61,7 +84,6 @@ function getItemFromLocalStorage(){
     } else {
         itemFromStorage = JSON.parse(localStorage.getItem('items'))
     }
-
     return itemFromStorage;
 }
 
@@ -90,6 +112,7 @@ function addItemToDom(typedItem){
     if(noItemsMessage){
         noItemsMessage.remove();
     }
+
 }
 
 function filterItems(e) {
@@ -107,11 +130,21 @@ function filterItems(e) {
     })
 }
 
+function setEditItems(item){
+    console.log(item)
+    isEditMode = true;
+    item.classList.add('edit-mode');
+    formBtn.innerHTML = "<i class='fa-solid fa-pen'></i> Edit Item";
+    itemInput.value = item.textContent;
+}
 
 function onClickItem(e){
+    // console.log(e.target.firstChild);
     if (e.target.parentElement.classList.contains('remove-item')) {
         deleteItem(e.target.parentElement.parentElement);
-    } 
+    } else {
+        setEditItems(e.target);
+    }
 }
 
 function deleteItem(item) {
@@ -119,7 +152,6 @@ function deleteItem(item) {
            item.remove();
            removeItemFromStorage(item.textContent);
         }
-    
     checkUI();
 }
 
@@ -127,12 +159,14 @@ function removeItemFromStorage(item){
     let itemFromStorage = getItemFromLocalStorage(item);
 
     itemFromStorage = itemFromStorage.filter((i) => i !== item);
-    console.log(itemFromStorage);
+    localStorage.setItem('items', JSON.stringify(itemFromStorage));
 }
 function removeAll(){
     while(itemList.firstChild){
         itemList.removeChild(itemList.firstChild);
     }
+
+    localStorage.clear('items');
     // HIDE THE filter and clear all btn
     checkUI();
 }
@@ -150,11 +184,15 @@ function checkUI() {
 
             h1.appendChild(text);
             h1.id = 'no-items-message'; // Set an id for the message
-            itemList.appendChild(h1); // Append the message to the itemList
+            filter.insertAdjacentElement('afterend', h1); // Append the message to the itemList
         }
     } else {
         removeBtn.style.display = "initial";
         filter.style.display = "initial";
+
+        if (noItemsMessage) {
+            noItemsMessage.remove();
+        }
     }
 }
 function init(){
@@ -162,9 +200,7 @@ function init(){
     itemList.addEventListener('click', onClickItem);
     removeBtn.addEventListener('click', removeAll);
     filter.addEventListener('input', filterItems);
-    document.addEventListener('DOMContentLoaded', displayItems)
-
-    checkUI();
+    document.addEventListener('DOMContentLoaded', displayItems);
 }
 
 init();
