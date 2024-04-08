@@ -210,7 +210,7 @@ function checkUI() {
     }
 
     formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
-    formBtn.bacl
+    formBtn.style.background = "grey";
     isEditMode = false;
 }
 function init(){
