@@ -50,6 +50,15 @@ function onAddItemsSubmit(e) {
         return;
     }
 
+
+    if(isEditMode){
+        const itemToEdit = itemList.querySelector('.edit-mode');
+
+        removeItemFromStorage(itemToEdit.textContent);
+        itemToEdit.remove();
+        isEditMode = false;
+    }
+
     addItemToLocalStorage(typedItem);
     addItemToDom(typedItem);
 
@@ -131,11 +140,16 @@ function filterItems(e) {
 }
 
 function setEditItems(item){
-    console.log(item)
     isEditMode = true;
+
+    itemList.querySelectorAll('li').forEach(item => {
+        item.classList.remove('edit-mode');
+    });
+
     item.classList.add('edit-mode');
     formBtn.innerHTML = "<i class='fa-solid fa-pen'></i> Edit Item";
     itemInput.value = item.textContent;
+    formBtn.style.background = "#1fd655";
 }
 
 function onClickItem(e){
@@ -194,6 +208,10 @@ function checkUI() {
             noItemsMessage.remove();
         }
     }
+
+    formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+    formBtn.bacl
+    isEditMode = false;
 }
 function init(){
     form.addEventListener('submit', onAddItemsSubmit);
